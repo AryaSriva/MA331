@@ -1,0 +1,173 @@
+---
+name: "Aryaman Srivastava"
+title: "HW_4"
+output: pdf_document
+date: "2023-10-2"
+pledge: "I pledge my honor that I have abided by the Stevens Honors System"
+---
+
+
+#HW #4 Due 11:59 PM Monday October 2, 2023
+
+All parts of this homework should be submitted to Canvas. Submit the answers to questions without an inserted code block using handwritten scanned notes or as a latex/typed up pdf file with justification. Submit the answers  to those questions with an inserted code block as the pdf file generated when knitting this report. If need be, combine these pdfs into a single file
+
+##Question 1
+A uniform(0, 2) distribution has pdf f(x) = 1/2 if X is between 0 and 2, and f(x) = 0 otherwise.
+
+###A)  Find the expected value of the sample mean of a sample of size 30 from a Uniform(0, 2), as well as the variance of the sample mean 
+
+
+
+
+
+###B) Using a similar approach to the problem above, find the sample mean and variance of the sample mean for a sample of size 30 drawn from a Uniform(0, W), where W is some positive value. 
+
+
+
+
+
+
+###C) Now let's say we know the minimum possible value is 0, but we know the maximum value, that is, we don't know what W actually is, but we are trying to estimate it. (You can think of the example: how big is the tallest tree? We may not be able to survey every tree, but if tree heights are uniformly distributed -- they're not -- if we sample a few, maybe we can estimate how tall the tallest one is). Using the idea from part B), derive the method of moments estimator for W using our sample 
+
+
+
+
+
+
+
+
+###D) Take 1000 replicates of samples of size 30 from a Uniform(0, 5), that is, in each replicate, choose 30 numbers at random between 0 and 5 using the runif function. Even though in this case, we know W = 5, assume we didn't know that, and calculate the estimated method of moments estimate for W for each replicate, and plot a histogram of the results. 
+```{r}
+x <- replicate(1000, mean(runif(30, 0, 5))*2)
+hist(x)
+
+```
+
+
+
+
+###E) Notice that for a Uniform(0, W) the pdf f(W) only takes on 2 values: 0 (for those outside the interval) and 1/W (for those in the interval). Notice as we change W, 1/W grows or shrinks. Since the likelihood is the product of the pdf at each value in our sample, argue that the way to maximize the likelihood is by estimating W as the largest value in our sample. You can do this by comparing the likelihood value when choosing *any* estimate of W that is either larger or smaller than the largest value in the sample. Hint: what happens to the pdf of the values when they are not in the interval, so subsequently, what happens to the likelihood of the whole sample?
+
+
+When values are not in the interval, they take on a pdf of 0 and subsequently the likelihood of the whole sample goes up as we are guaranteed that all the values in the interval will have a pdf. As such, if we make the interval larger, more values will be encompassed in the interval and the pdf for values in that interval will be smaller, so the likelihood of the whole sample goes up as we are guaranteed that more values will have a pdf. Thus, to maximize the likelihood, we should estimate W as the largest value in our sample, since the pdf is 1/W for values from 0 to W, so values greater than W will not be included in the pdf and thus would skew the likelihood of the whole sample as those values would be shown to be impossible to be in the distribution.   
+
+
+
+###F) Using the 1000 replicates of samples of size 30 from a Uniform(0, 5) from earlier (or a new sample), plot the Maximum Likelihood Estimate of W for each sample.
+```{r}
+x <- replicate(1000, sum(log(dunif(runif(30, 0, 5), 0, mean(runif(30, 0, 5))*2))))
+hist(x)
+```
+
+
+###G) Comment on the different results we get from the Method of Moments estimator vs the Maximum likelihood estimator, and note any benefits or drawbacks of the results from each method. 
+
+
+The histogram of the Method of Moments estimator estimates W to be a value from 3 to 7, while the Maximum Likelihood Estimator shows us that W is very likely to be captured by the Uniform Distribution(0,5). From Part C, we had established that W is estimated to be 2 times the expected value of the distribution. Based on this information, W should be estimated to be roughly 5. The Method of Moments estimator in this case would be somewhat inaccurate as some samples have an estimate that is not 5. On the same note, the Maximum Likelihood Estimator only tells us that W is likely to be in the range from 0 to 5, but it doesn't actually tell us what W is, so W could be any value that is in that range, including values that are not 5. 
+
+
+
+
+
+##Question 2
+###A) Since the expected value of a binomial(n, p) = np and the variance of a binomial(n, p) = np(1-p), if we took a sample of 20 binomial(50, .3) RVs, find the expected value of the sample mean, as well as the variance of the sample mean. 
+
+
+E(X) = np = 50*.3 = 15
+Var(X) = np(1-p) = 10.5
+
+
+###B) Take 1000 replicates of 20 binomial(50, .3) RVs and build 95% confidence intervals for all of them using the theoretical standard deviation of the sample mean (that is, using Z-scores from the standard normal distribution). Report the proportion of these confidence intervals that contain the true expected value of this distribution.  
+```{r}
+x <- replicate(1000, mean(rbinom(20, 50, 0.3)))
+intervals <- matrix(0, nrow = length(x), ncol = 2)
+intervals[, 1] <- x + qnorm(.025)*(sqrt(10.5)/sqrt(20))
+intervals[,2] <- x + qnorm(.975)*(sqrt(10.5)/sqrt(20))
+CIContainsExpectedVal <- apply(intervals, MARGIN = 1, FUN = function(x, y){(x[1]<15)*(x[2]>15)})
+mean(CIContainsExpectedVal)
+```
+
+
+###C)Repeat the process from part B) 400 times, plot the histogram of the results,that is a histogram of the proportion of these confidence intervals in each replicate that contain the true expected value of this distribution, and comment on whether the coverage looks appropriate
+
+```{r}
+result <- c()
+for (x in 1:400) {
+  x <- replicate(1000, mean(rbinom(20, 50, 0.3)))
+  intervals <- matrix(0, nrow = length(x), ncol = 2)
+  intervals[, 1] <- x + qnorm(.025)*(sqrt(10.5)/sqrt(20))
+  intervals[,2] <- x + qnorm(.975)*(sqrt(10.5)/sqrt(20))
+  CIContainsExpectedVal <- apply(intervals, MARGIN = 1, FUN = function(x, y){(x[1]<15)*(x[2]>15)})
+  result <- append(result, mean(CIContainsExpectedVal))
+}
+hist(result)
+```
+
+
+The coverage does look appropriate as the histogram is centered around roughly .95, which is close to what we expect as we are drawing 95% confidence intervals, and we expect that about 95% of these intervals capture the true expected value. 
+
+
+
+###D) Repeat part C but instead of using the theoretical quantity for sigma, use the sample standard deviation for each sample of size 20, again using the Z-scores from the standard normal distribution. Comment on whether the coverage looks appropriate  
+```{r}
+result <- c()
+for (x in 1:400) {
+  x <- replicate(1000, rbinom(20, 50, 0.3))
+  sampleMeans <- colMeans(x)
+  FullSampleSD <- apply(x, MARGIN = 2, FUN = sd)
+  SampleMeansSD <- FullSampleSD/sqrt(20)
+  intervals <- matrix(0, nrow = length(x), ncol = 2)
+  intervals[, 1] <- sampleMeans + qnorm(.025)*SampleMeansSD
+  intervals[,2] <- sampleMeans + qnorm(.975)*SampleMeansSD
+  CIContainsExpectedVal <- apply(intervals, MARGIN = 1, FUN = function(x, y){(x[1]<15)*(x[2]>15)})
+  result <- append(result, mean(CIContainsExpectedVal))
+}
+hist(result)
+```
+
+
+This coverage is not as appropriate as the histogram seems to be centered around .93, which means that roughly 93% of the confidence intervals capture the expected value. However, since we are drawing 95% confidence intervals, we expect that 95% of the confidence intervals will capture the expected value.
+
+
+###E) Repeat part C using the sample standard deviation for each sample of size 20, but this time using values from the t distribution instead of from the standard normal distribution. Comment on whether the coverage looks appropriate  
+```{r}
+result <- c()
+for (x in 1:400) {
+  x <- replicate(1000, rbinom(20, 50, 0.3))
+  sampleMeans <- colMeans(x)
+  FullSampleSD <- apply(x, MARGIN = 2, FUN = sd)
+  SampleMeansSD <- FullSampleSD/sqrt(20)
+  intervals <- matrix(0, nrow = length(x), ncol = 2)
+  intervals[, 1] <- sampleMeans + qt(.025, df = 19)*SampleMeansSD
+  intervals[,2] <- sampleMeans + qt(.975, df = 19)*SampleMeansSD
+  CIContainsExpectedVal <- apply(intervals, MARGIN = 1, FUN = function(x, y){(x[1]<15)*(x[2]>15)})
+  result <- append(result, mean(CIContainsExpectedVal))
+}
+hist(result)
+```
+
+
+lThe coverage does look appropriate as the histogram is centered around 0.95, which is what we expect as we are drawing 95% confidence intervals and expect that 95% of these intervals capture the true expected value. 
+
+
+
+##F) Now repeat part D) but now instead of taking 20 replicates per sample, take 500 replicates per sample. Use the sample standard deviation for each sample of size 1000, and the Z-scores from the standard normal distribution. Comment on whether the coverage looks appropriate. How can you explain any difference in performance from this example to part D)? 
+
+```{r}
+result <- c()
+for (x in 1:400) {
+  x <- replicate(1000, rbinom(500, 50, 0.3))
+  sampleMeans <- colMeans(x)
+  FullSampleSD <- apply(x, MARGIN = 2, FUN = sd)
+  SampleMeansSD <- FullSampleSD/sqrt(500)
+  intervals <- matrix(0, nrow = length(x), ncol = 2)
+  intervals[, 1] <- sampleMeans + qnorm(.025)*SampleMeansSD
+  intervals[,2] <- sampleMeans + qnorm(.975)*SampleMeansSD
+  CIContainsExpectedVal <- apply(intervals, MARGIN = 1, FUN = function(x, y){(x[1]<15)*(x[2]>15)})
+  result <- append(result, mean(CIContainsExpectedVal))
+}
+hist(result)
+```
+
+
+As we can see, the resulting histogram from part F seems to be more centered around .95 than part D, and this difference in performance can be attributed to the larger sample size of part F. With a larger sample size, the sample standard deviation goes down, as the standard deviation for the sample is over the square root of n. This results is tighter intervals, which means that we get a more accurate proportion of how many intervals capture the expected value which is closer to the expected proportion than if we used a smaller sample size.

@@ -1,0 +1,162 @@
+---
+name: "Aryaman Srivastava"
+title: "HW_5"
+output: pdf_document
+date: "2023-10-11"
+pledge: "I pledge my honor that I have abided by the Stevens Honors System"
+---
+
+
+#HW #5 Due 11:59 PM Wednesday October 11, 2023
+
+All parts of this homework should be submitted to Canvas. Submit the answers to questions without an inserted code block using handwritten scanned notes or as a latex/typed up pdf file with justification. Submit the answers  to those questions with an inserted code block as the pdf file generated when knitting this report. If need be, combine these pdfs into a single file
+
+##Question 1
+###A
+Assume we are building a 95% confidence interval for a proportion where the number of trials is 1000 and the observed number of successes is 500. Report the endpoints of the confidence interval for the true proportion as well as the size of the margin of error 
+
+
+###B 
+Holding all else constant, what is the smallest number of samples we would need to take to ensure the margin of error is less than .01?
+
+###C 
+Holding all else constant, what is the highest confidence level we can take while still having the margin of error be less than .01?
+
+
+
+##Question2
+###A
+A uniform(0, 2) distribution has pdf f(x) = 1/2 if X is between 0 and 2, and f(x) = 0 otherwise.
+
+Generate 1000 samples of a Normal(0, 1) RV called normalZeroSample
+Then Generate 1000 samples of a Normal(.5, 1) RV called normalThreeSample 
+Then Generate 1000 samples of a Normal(5, 1)  RV called normalFiveSample
+```{r}
+normalZeroSample <- rnorm(1000, 0, 1)
+normalHalfSample  <- rnorm(1000, 0.5, 1)
+normalFiveSample <- rnorm(1000, 5, 1)
+
+ 
+# Plotting the histogram of the First distribution in Red
+hist(normalZeroSample, breaks=30, xlim=c(-5,10), col=rgb(1,0,0,0.5), xlab="values", 
+     ylab="number of observations", main="Plotting 3 distributions" )
+
+# Second with add=T to plot on top in Blue
+hist(normalHalfSample, breaks=30, xlim=c(-5,10), col=rgb(0,0,1,0.5), add=T)
+
+# Third with add=T to plot on top in Green
+hist(normalFiveSample, breaks=30, xlim=c(-5,10), col=rgb(0,1,0,0.5), add=T)
+
+
+```
+
+Are these distributions completely separate? Even so, do you think you'd be able to distinguish between them? Which distribution looks least like the others? 
+
+
+Two of the distributions have a great amount of overlap while the other distribution seems to be separate from the other two. I think I would be able to somewhat distinguish them as one is mostly separate from the others and for the two that overlap a lot, one seems to be centered at 0 and one seems to be centered at 1. The distribution centered at 5 looks least like the others in that it is separate from the other two. 
+
+
+###B 
+Build a 95% confidence interval to estimate the expected values of each of these distributions and report the results. You can use the true population standard deviations but build the CI's around the sample means. Are we able to say with 95% confidence that the true expected value of these distributions are different from 0? Why or why not?
+```{r}
+expectedValZero <- mean(normalZeroSample)
+expectedValHalf <- mean(normalHalfSample)
+expectedValFive <- mean(normalFiveSample)
+popSD <- 1
+Confidence <- 0.95
+N <- 1000
+plotCI <- function(sampleMean, popSD, N, Confidence){
+  zStar = qnorm((1-Confidence)/2)
+  standardError = popSD/sqrt(N)
+  MarginofError = abs(zStar) * standardError
+  CI = c(sampleMean - MarginofError , sampleMean + MarginofError) 
+  plot(CI, rep(0, length(CI)), type='l', lwd = 10, col='blue', xlim = c(floor(CI[1])-1 ,ceiling(CI[2])+1), yaxt="n", ylab=NA, main= paste0("Sample Mean: ", sampleMean, ", Population SD: ", popSD, ", N: ", N, ", Confidence: ", Confidence), xlab=NA)
+  points(x = sampleMean, y = 0, col='green', cex=2, pch=16)
+  points(x = CI, y = rep(0, length(CI)), col='red', cex=2, pch=15)
+  abline(v = 0)
+}
+plotCI(expectedValZero, 1, 1000, .95)
+plotCI(expectedValHalf, 1, 1000, .95)
+plotCI(expectedValFive, 1, 1000, .95)
+```
+
+
+Yes as the entire confidence interval for both the distribution with an expected value of 0.5 and 5 lies above 0. As such, we can be 95% confident that the true expected value for these two distributions is not 0. For the distribution with an expected value of 0, 0 does lie within the confidence interval, so we cannot say that we are 95% confident that the true expected value of that distribution is not 0.
+
+
+
+##C
+Let's say we built a smaller sample and we also wanted more confidence. Imagine we had only taken 20 samples, but got the same exact sample means as earlier. Build a 99% confidence interval around these sample means. With only 20 samples, would we able to say with 99% confidence that the true expected value of these distributions are different from 0? Why or why not? 
+```{r}
+plotCI(expectedValZero, 1, 20, .99)
+plotCI(expectedValHalf, 1, 20, .99)
+plotCI(expectedValFive, 1, 20, .99)
+
+```
+
+
+For the distribution with an expected value of 5, we can say that we are 99% confident that the true expected value is not 0 as the confidence interval for that distribution lies above 0. However, for the distributions with an expected value of 0 and 0.5, the confidence intervals do contain 0, so we cannot say that we are 99% confident that the true expected value is not 0 for those two distributions.
+
+
+##D 
+Let's show that these are equivalent to Hypothesis tests. Assuming we know the true standard deviation and that the distribution is normal, test the 3 null hypotheses that each of these samples of size 1000 are drawn from a distribution with expected value of 0, versus the alternative hypothesis that the expected value is greater than 0. Set alpha = .05. Use the pnorm() function, noting that because we are looking at the probability in the upper tail, our p-value will be 1 minus the relevant output of pnorm(). Find the p-values, and interpret the meaning of your results        
+```{r}
+pValZero <- 1 - pnorm(expectedValZero, 0, 1/sqrt(1000))
+pValHalf <- 1 - pnorm(expectedValHalf, 0, 1/sqrt(1000))
+pValFive <- 1 - pnorm(expectedValFive, 0, 1/sqrt(1000))
+pValZero
+pValHalf
+pValFive
+
+
+```
+
+
+With a p-value greater than 0.05, we fail to reject the null hypothesis that the true expected value is 0 for the distribution centered around 0 and don't have sufficient evidence to prove that the true expected value is greater than 0. With a p-value less than 0.05, for both the distribution centered around 0.5 and 5, we reject the null hypothesis and have sufficient evidence that the true expected value for both these distributions is greater than 0.
+
+
+##E
+Repeat Part D, but this time assume our sample size was only 20 (although the sample means are unchanged), and that our new alpha level is .01. 
+```{r}
+pValZero <- 1 - pnorm(expectedValZero, 0, 1/sqrt(20))
+pValHalf <- 1 - pnorm(expectedValHalf, 0, 1/sqrt(20))
+pValFive <- 1 - pnorm(expectedValFive, 0, 1/sqrt(20))
+pValZero
+pValHalf
+pValFive
+```
+
+
+With a p-value greater than 0.01, we fail to reject the null hypothesis for both the distribution centered around 0 and 0.5, and do not have sufficient evidence to conclude that the true expected value is greater than 0 for both distributions. With a p-value less than 0.01, we reject the null hypothesis for the distribution centered around 5, and have sufficient evidence to conclude that the true expected value for this distribution is greater than 0. 
+
+
+##F
+In parts A-E, we assumed these data aren't paired. Let's assume instead that we have paired data. Write code to sort the 1000 samples centered at 0, then to sort the 1000 samples centered at 1/2. Find the correlation between these newly sorted samples and report it. Then take the difference between those newly sorted samples. You should have another vector of length 1000.
+
+Report the sample mean and sample standard deviation of this difference vector. 
+
+```{r}
+x <- sort(normalZeroSample)
+y <- sort(normalHalfSample)
+cor(x, y)
+difference <- c(x - y)
+mean(difference)
+sd(difference)
+
+```
+##G
+Using the sample mean and sample standard deviation you found for the difference of "paired data," build a 99% confidence interval of the expected value of this difference. You can assume the sample standard deviation is the true population standard deviation, and you should also assume we gor these values using only 20 paired samples. Can we say with 99% confidence the expected value of this difference is different from 0?
+
+```{r}
+plotCI(mean(difference), sd(difference), 20, .99)
+
+```
+
+
+Since the entire confidence interval for this difference lies below 0, we can say with 99% confidence that the expected value of this difference is different from 0. 
+
+Remark on any difference that arises from taking the difference of this paired data rather than using the mean of the sample centered at 1/2. 
+
+
+When we use the mean of the sample centered at 0.5, our confidence interval would capture more positive values and be centered around 0.5
+In addition, our confidence interval using the mean of the sample centered at 0.5 would be a lot wider due to the standard deviation of that sample being larger than the standard deviation of the difference.

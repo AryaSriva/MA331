@@ -1,0 +1,177 @@
+---
+Author: "Aryaman Srivastava"
+title: "HW3"
+output: pdf_document
+date: "2023-09-25"
+pledge: "I pledge my honor that I have abided by the Stevens Honors System"
+---
+
+
+#HW #3 Due 11:59 PM Monday September 25, 2023
+
+All parts of this homework should be submitted to Canvas. Submit the answers to Question 1 using handwritten scanned notes or as a latex/typed up pdf file with justification. Submit the answers  to Questions 2 - 5 as the pdf file generated when knitting this report. If need be, combine these pdfs into a single file
+
+##Question 1
+Let there be 2 classes of senior students in a high school. The high school has a total of 89 seniors. 34 seniors in the first class are taking AP tests this year. There are 40 seniors in the second class. 64 seniors from this school in total are taking AP tests this year. 
+
+###A) What is the probability that a senior picked at random is not taking AP tests this year?
+
+
+We know that there are 64 seniors from the school that are taking AP tests. We also know that there a total of 89 seniors in this school. 
+
+A: senior is not taking AP tests
+
+P(A) = 1 - 64/89 = 25/89
+
+
+###B) What is the probability that a senior picked at random is in the first class and is not taking AP tests this year?
+
+
+We know that there are 40 seniors in the second class, and since the school has a total of 89 seniors, there must be a total of 49 seniors in the first class. 34 seniors in the first class are taking the AP test, so 15 seniors are not taking the AP test in that class. From the population of seniors, we have a 49/89 chance of picking one from the first class. From class 1, we have a 15/49 chance of picking a senior that is not taking any AP tests. We know that the events are dependent as the probability of a senior in class 1 not taking the AP test(15/49) is not equal to the probability of a random senior being from the first class(49/89) * the probability of a random senior not taking the AP test(25/89).
+
+With this information, we can perform the calculation:
+
+A: senior is from the first class
+
+B: senior is not taking the AP Test
+
+P(A and B) = P(B|A)*P(A)
+
+P(A and B) = (15/49)*(49/89)
+
+P(A and B) = 0.167
+
+
+###C) What is the probability that a senior in the first class picked at random is not taking AP tests this year?
+
+
+We know that there are 49 seniors in the first class, and 15 of those seniors are not taking AP tests.
+
+A: senior is not taking AP tests
+
+B: senior is from the first class
+
+P(A|B) = 15/49
+
+
+###D) What is the probability that a senior picked at random who is not taking AP tests this year is in the first class?
+
+
+We know that there are a total of 25 seniors in the high school that are not taking the AP test, and 15 seniors from the first class who are not taking the AP test.
+
+A: senior is from the first class
+
+B: senior is not taking AP tests
+
+P(A|B) = 15/25
+
+
+
+###E) Assume the probability of a senior taking APs reflected in this school (across both classes) is actually the true population parameter. If I were to draw a sample of 8 seniors from the general population, what is the probability that at least 2 of them are taking APs this year?    
+
+From the population, the probability of a senior taking the AP test is 64/89 and the probability of the senior not taking the AP test is 15/89.
+
+P(at least 2) = 1 - (8C0(64/89)^0(15/89)^8 + 8C1(64/89)^1(15/89)^7)
+
+P(at least 2) = 1 - 0.00002287332
+
+P(at least 2) = 0.99997712667
+
+
+
+
+##Question 2  
+###A) Calculate the 1st, 2nd, and 3rd sample moments for the following data
+
+
+
+```{r}
+momentData <- c(87, 54, 93, 62, 25, 99, 83, 36, 25, 38, 86, 18, 96, 95, 64, 47, 63, 85, 91, 73, 32, 52, 69, 30, 87)
+
+mean(momentData)
+mean(momentData^2)
+mean(momentData^3)
+
+
+
+```
+
+
+###B) Find the method of moments estimate for the population variance of momentData, as well as s^2 for this data.  
+
+```{r}
+m1 <- sum(momentData)/length(momentData)
+m2 <- sum(momentData^2)/length(momentData)
+varEstimate <- m2 - m1^2
+variance <- sum((momentData - mean(momentData))^2)/(length(momentData) - 1)
+varEstimate
+variance
+
+```
+
+
+##Question 3
+
+Let W be a random variable that takes on the values 1, 2, 3, 4,... 49, 50 
+with probabilities  (1^2)/sum((1:50)^2), (2^2)/sum((1:50)^2), (3^2)/sum((1:50)^2), ... (49^2)/sum((1:50)^2),  (50^2)/sum((1:50)^2).
+
+Calculate the expected value of W conditional on W having taken on a value that is a perfect square. Remember to make sure your probabilities sum to 1. 
+
+```{r}
+sum <- 0
+squares <- c(1,4,9,16,25,36,49)
+for (i in squares) {
+    sum <- sum + 1/7*i
+}
+sum
+```
+
+
+##Question 4
+We mentioned that the sample variance s^2 is also a statistic, so it has a sampling distribution.
+
+For 1000 replicates, sample from a normal(0, 3) distribution and calculate the sample variance and make a histogram. Do this a few times (but only plot one histogram), and remark upon the shape of the distribution  
+
+
+```{r}
+samples <- replicate(1000, var(rnorm(1000, 0, 3)))
+hist(samples)
+```
+
+The distribution of the sample variances appears to be approximately normal with a center around 9.0 and a spread from approximately 7.5 to 10.5.
+
+
+##Question 5
+
+##A) Calculate the covariance between the first 4 columns in the iris dataset (that is, iris[, 1:4] ). 
+```{r}
+cov(iris[, 1:4])
+```
+
+
+##B) Calculate the correlation between the first 4 columns in the iris dataset
+```{r}
+cor(iris[, 1:4])
+```
+
+
+##C) plot the first 4 columns of the iris dataset against one another using the pairs command
+```{r}
+pairs(iris[, 1:4])
+```
+
+
+##D) Remark upon what information you can glean from the covariances, the correlations, and the variable plots. If you knew nothing about this dataset and only saw the information so far in this question, how many different types of irises would you think there were in the dataset? Explain your reasoning
+
+
+There appears to be a strong correlation petal length and petal width as well as sepal length and petal length while a moderate correlation between sepal width and sepal length as well as a very weak correlation between sepal width and petal width. In addition, sepal width appears to have a negative covariance across the other 3 categories while petal width appears to have a positive covariance with sepal length and sepal width. The variable plots appear to show linear trends for all plots, while also showing 2 distinct clusters for all plots, which leads me to believe that there are 2 different types of irises in the data set. 
+
+
+
+
+
+##E) Now add the argument "col=iris$Species" (without the quotation marks) into the pairs() command to color the points by the true iris species. How does adding ground truth (as represented by color) change your perspective on this dataset? Knowing what you know now, if given the measurements for a single flower, do you think you'd be able to identify its species? Explain your reasoning
+```{r}
+pairs(iris[, 1:4], col = iris$Species)
+```
+This changes my perspective as I can now see that there are not 2 irises in the data set but 3 irises. Furthermore, I can see that 2 of the irises are very similar and close together in all the plots, which had led me to believe that there are only 2 irises in the previous question. I can see that the irises are distinctively separated into 3 clusters as shown by the colors, but I don't think I would be able to identify the species of a single flower if I was given its measurements. This is because there appears to be some overlap between two of the species across all the plots, so I think that it would be very plausible to mix up the two species if I was given measurements that lies within the overlap of the two clusters. On the other hand, if I was given measurements for the iris that doesn't overlap with the other two, I think I would be able to accurately identify its species as those measurements would be distinct and only exist within that species. 

@@ -1,0 +1,137 @@
+---
+name: "Aryaman Srivastava"
+title: "HW_2"
+output: pdf_document
+date: "2023-09-18"
+pledge: "I pledge my honor that I have abided by the Stevens Honors System"
+---
+
+
+
+#HW #2 Due 11:59 PM Monday September 18, 2023
+
+All parts of this homework should be submitted to Canvas. Submit the answers to Question 1 and Question 2  using handwritten scanned notes or as a latex/typed up pdf file. Submit the answers  to Questions 3 and 4 as the pdf file generated when knitting this report. If need be, combine these pdfs into a single file
+
+##Question 1: Comparing across eras
+Assume the number of points per game each player scores in the nba is normally distributed with a different mean and standard deviation each season, that is, there are higher scoring eras and lower scoring eras.
+
+World B. Free played in the 1970's and 1980's and averaged 24.1 points per game in the 1981 season. 
+Metta World Peace played in the 2000's and 2010's and averaged 20.5 points per game in the 2008 season. 
+
+(Both of these players were not born with these names, but legally changed their names to have a similar message.) 
+
+Your grandfather tells you he watched both payers and he thought World B. Free in 1981 was much better than Metta World Peace in 2008. You suspect your grandfather is just a hater who thinks everything was better back in his day (he said Olivia Rodrigo is a poor man's Lorde playing Avril Lavigne B-sides, and he was TikTok famous back when it was musical.ly, and Vine was way better anyway.)     
+
+You want to see if your grandpa has a point, so you find the distribution of points per game in 1981 was a Normal with a mean of 19 and a standard deviation of 3. The distribution of points per game in 2008 was a Normal with a mean of 16 and a standard deviation of 2.5. If all you care about is points, can you argue Metta World Peace was better? Why or why not?
+
+
+z_metta = (20.5-16)/2.5 = 1.8
+
+z_world = (24.1-19)/3 = 1.7
+
+I can argue that Metta World Peace was better as for his era, he scored on average 1.8 standard deviations above the mean number of points for the 2008 season. In contrast, World B. Free scored on average 1.7 standard deviations above the mean number of points for the 1981 season. So, Metta World Peace is better as he scored more than the average for his time than World B. Free did for his time. 
+
+
+##Question 2: Using the symmetry of the normal distribution
+Without using R, assume the 68 - 95 - 99.7 rule holds precisely (not approximately).
+
+###A)
+What proportion of a Normal distribution falls within at least 2 standard deviations of the mean?
+
+
+95% of the distribution.
+
+
+###B) 
+Using the symmetry of the Normal distribution, what percentage of the  Normal distribution falls below 1 standard deviation below the mean? What percentage of the data falls above 1 standard deviation above the mean? Explain your reasoning
+
+
+34 percent falls above the mean and 34 percent falls below the mean. This is because 68% of the normal distribution lies within 1 standard deviation of the mean. By the symmetry of the normal distribution, this means that half of that 68%, which is 34% lies above and half lies below. 
+
+
+
+###C) 
+what percentage of the  Normal distribution falls either below 2 standard deviations below the mean or above 1 standard deviation above the mean? Explain your reasoning
+
+
+95% of the normal distribution lies within 2 standard deviations of the mean, and by the symmetry of the normal distribution, this means that 47.5% of the distribution is below the mean. 68% of the normal distribution lies within 1 standard deviation of the mean, and by the symmetry of the normal distribution, 34% of the distribution lies 1 standard deviation above the mean. Combining these two values, we find that 81.5% of the distribution lies either 2 standard deviations below or 1 standard deviation above the mean. 
+
+
+## Question 3: CDF values of Continuous RVs
+###A
+Use a geometric argument to calculate the probability a Uniform(0, 1) RV takes on a value less than .3
+
+
+The uniform probability distribution, geometrically has the shape of a square from 0 to 1. We can represent this as the function f(x) = 1 for 0 <= x <= 1. We can then integrate this function with the bounds of 0 to 0.3 to find the probability the RV takes on a value less than .3. Performing this calculation, we get P(x < .3) = 0.3 
+
+
+###B
+Use R to find the probability a Uniform(0, 1) RV takes on a value less than .3
+```{r}
+punif(.3, 0, 1)
+```
+
+###C
+Use R to find the probability an Exponential(2) RV takes on a value less than .3
+```{r}
+pexp(.3, 2)
+```
+
+
+###D
+Use R to find the probability an Exponential(2) RV takes on a value greater than .5
+```{r}
+1 - pexp(.5, 2)
+```
+
+
+###E
+Use R to find the probability an Exponential(.5) RV takes on a value between .1 and .3
+```{r}
+pexp(.3, .5) - pexp(.1, .5)
+```
+
+
+###F
+Use R to find the probability an Exponential(3) RV takes on a value either less than .4 or greater than 1
+```{r}
+pexp(.4, 3) + (1 - pexp(1, 3))
+```
+
+
+
+
+##Question 4: Theoretical sample vs experimental sample 
+We are checking whether a drug is effective in producing more of a particular protein. We administer the drug to 50 people. We know that in the general population, the parts per million of this particular protein in people's blood is normally distributed with a mean of 10 and a standard deviation of 5. After a month on the drug, the 50 people's blood was tested and the sample mean of the group was 10.3. 
+
+###A
+How likely is it that if we took a sample of 50 people from the general population, we would get a sample mean greater than 10.3? Calculate this theoretical value 
+
+```{r}
+1 - pnorm(10.3, 10, 5/sqrt(50))
+```
+
+###B
+Now do this empirically. Take 5000 samples of size 50 and tell me the probability that the sample mean exceeds 10.3
+
+```{r}
+samp5000 <- rep(rnorm(50, 10, 5/sqrt(50)), 5000)
+sum(samp5000 >= 10.3)/(length(samp5000))
+
+```
+
+
+###C
+What if we took a much larger sample. If instead we tested the drug on 10,000 people and got a sample mean of 10.25.  
+
+How likely is it that if we took a similar sample from the general population, we would get a sample mean greater than 10.25? Calculate this value theoretically
+
+```{r}
+1 - pnorm(10.25, 10, 5/sqrt(10000))
+```
+
+##D
+Comment on the difference between the case with 50 people in the trial versus with 10,000 people in the trial. What practical difference is there? Would either of these results convince you the drug works? Did anything surprise you? Can you explain this result? 
+
+
+There is a substantially large difference between the case with 50 people in the trial versus 10,000 people in the trial. With the trial of 50 people, there is a .33 probability that the sample mean exceeds 10.3, and with the trial of 10,000 people, there is a 2.86E-07 probability that the sample mean exceeds 10.25. The practical difference is that there is less variation with the larger sample, which gives more evidence that the drug works as intended and it was not luck or some other confounding factor/outliers that gave the results. The result of the 10,000 people sample would convince me the drug works as the sample size is very large but still shows a sample mean of 10.25 with very little variation, which indicates that the drug is effective in raising the protein levels. What did surprise me is the drastic difference between the sample of 50 people and sample of 10,000 people, as I didn't expect the probabilities to be that different. This resulted from the size of the sample size as the standard deviation of the sample is equal to the standard deviation of the population divided by the square root of the size of the sample. So, the 10,000 people sample had a lower standard deviation and as a result had less variation which thereby significantly reduces the probability of an observation being drastically different from the sample mean. 
