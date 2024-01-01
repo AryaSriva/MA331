@@ -1,0 +1,165 @@
+---
+name: "Aryaman Srivastava"
+pledge: "I pledge my honor that I have abided by the Stevens Honors System"
+title: "HW_10"
+output: pdf_document
+date: "2023-12-4"
+---
+
+
+#HW #10 Due 11:59 PM Monday, December 4, 2023
+
+All parts of this homework should be submitted to Canvas. Submit the answers to questions without an inserted code block using handwritten scanned notes or as a latex/typed up pdf file with justification. Submit the answers  to those questions with an inserted code block as the pdf file generated when knitting this report. If need be, combine these pdfs into a single file
+
+##Question 1
+###A
+Let the log odds of event A occurring be equal to t. Find the probability that event A occurs in terms of t. 
+
+
+t = log(P(A)/(1-P(A)))
+
+e^t = P(A)/(1-P(A))
+
+P(A) = e^t/(1+e^t)
+
+###B
+We said in the simple logistic regression model
+
+log-odds = B_0 + B_1 X_1
+
+What are the *odds* at point X_star?
+
+
+X1 = X_star
+
+log-odds = B_0 + B_1*X_star
+
+odds = e^(B_0+B_1*X_star)
+
+
+###C
+Using your result from part B, what are the odds at point X_star + 1?
+Since X_star was arbitrary, can we say, in general, how an increase of 1 unit in X_1 changes the odds?   
+
+
+odds = e^(B_0 + B_1*(X_star + 1))
+
+odds = e^(B_0 + B_1*X_star + B_1)
+
+odds = (e^B_0)*(e^(B_1*X_star))*(e^(B_1))
+
+An increase of 1 unit in X_1 will change the odds by a factor of e^B_1. 
+
+    
+##Question 2       
+###A 
+Let's look again at the iris data. Plot the sepal length by species, and note which species is which, and describe what you see         
+```{r}
+head(iris)
+plot(iris$Species, iris$Petal.Length)
+```
+
+
+The species for the most part to have distinct petal lengths, but there is some overlap between the versicolor and virginica species. In general, it seems that the setosa species has the lowest petal lengths, then veriscolor, and then virginica has the largest petal length. 
+
+
+###B
+What if we wanted to estimate the probability a particular iris is a versicolor based on its sepal length as the only predictor? Based on your answer to part A, explain why that might be difficult or misleading.
+
+
+That might be misleading because there is some overlap in petal lengths for the veriscolor and virginica so if we were to predict if the iris is a veriscolor using only sepal length, we might have an incorrect prediction because of this overlap that may make us to believe the iris is a veriscolor when it is actually a virginica and vice versa.
+
+
+
+###C
+Exercise: Fit a logistic regression model trying to predict whether an iris is a versicolor based on its sepal length. 
+Create a new variable called isVersicolor which will be 1 when the species is versicolor, and 0 otherwise. 
+Create another new variable SL_squared (the squared value of the sepal length).
+Fit a logistic model regressing isVersicolor on the sepal length and SL_squared  
+Display the summary of this model and comment on the estimated slopes and their p-values
+
+
+```{r}
+iris$isVersicolor <- ifelse(iris$Species == "versicolor", 1, 0)
+
+iris$SL_squared <- iris$Sepal.Length^2
+
+irisLogistic <- glm(isVersicolor ~ SL_squared + Sepal.Length, data = iris, family = binomial)
+
+summary(irisLogistic)
+  
+```
+
+
+###D 
+Plot the observed sepal lengths in the dataset in the x-axis and the fitted.values of your model on the y-axis. Comment on the plot in light of part A, and describe whether this result seems to make sense  
+
+```{r}
+plot(x = iris$Sepal.Length, y = irisLogistic$fitted.values)
+```
+
+
+The plot shows a near-perfect quadratic relationship between the fitted values of the logistic model and the sepal length. That means that our model shows that sepal length is a strong predictor for whether or not a particular flower is a veriscolor. As we saw in part A, for the most part the sepal length can be a predictor for the species of the iris, so this result does make sense. However, we should also keep in mind that there are some overlap between species, so using only sepal length as a predictor may lead us astray, as shown in part B.
+ 
+
+##Question 3
+###A
+Let's look at the state.x77 dataset. Before we do anything else, run the following code to make sure it's a dataframe called state2
+```{r}
+state2 = data.frame(state.x77)
+```
+
+We'd like to predict Income using Illiteracy. Fit this simple regression model and report the result with any commentary.
+```{r}
+model1 <- lm(Income~Illiteracy, data=state2)
+summary(model1)
+```
+
+
+###B 
+What if we add the murder rate (Murder)  of each state as a predictor to our regression. Fit that model. Run an F-test comparing it to our previous model and report those results. Which model do you prefer and why?
+```{r}
+model2 <- lm(Income~Illiteracy + Murder, data = state2)
+anova(model1, model2)
+
+```
+
+
+Since we got a p-value of 0.4089 from the F-test, which is above the alpha 0.05, we fail to reject the null hypothesis and don't have sufficient evidence to prove that the variance of the two models are different. Based on this information, using both predictors doesn't significantly improve the model's fit and predicting power over using 1 predictor. Therefore, I would rather use the model with only 1 predictor because it is simpler and still provides relatively the same predicting power as the model with 2 predictors. 
+
+
+###C 
+fit a model trying to predict Income using all other variables in the dataset. Run an F-test comparing it to the model you preferred in part B and report those results. Which model do you prefer and why? 
+```{r}
+model3 <- lm(Income~Illiteracy + Murder + Population + Life.Exp + HS.Grad + Frost + Area, data = state2)
+anova(model3, model1)
+```
+
+
+I prefer using model3 because with a p-value of 0.001861, which is below the alpha 0.05, so we do have sufficient evidence to conclude that model3 has a different variance than model1 and the use of multiple predictors provides us with a better fit and more predicting power over using only one predictor.
+
+
+###D 
+Print the summary of your chosen model so far, and describe whether you think this is a good enough model, or how you might consider improving it. 
+```{r}
+summary(model3)
+```
+
+
+I don't think this a good enough model because while we do have a small p-value for the f-statistic, the p-values for almost all our coefficients are above the alpha 0.05, indicating that they are not significant in affecting Income. To improve this model, I would only use the two predictors, Population and HS.Grad, as they seem to be the only coefficients which are statistically significant in predicting Income.
+
+
+###E 
+Calculate the VIF for the Illiteracy rate in the model with all variables included. (Hint: the pertinent model used to calculate VIF should be on all other variables besides Income). Is this result cause for concern?
+```{r}
+illiteracyRateModel <- lm(Illiteracy~Murder + Population + Life.Exp + HS.Grad + Frost + Area, data = state2)
+rSquared <- summary(illiteracyRateModel)$r.squared
+1/(1-rSquared)
+```
+
+This result is a slight cause for concern because with a VIF value of 4.36, we have some colinearity between Illiteracy Rate and all the other predictors. This means that our predictors are not entirely linearly independent, so our model with all the variables won't be as accurate and predictive of the variable we want to estimate.
+
+
+
+
+

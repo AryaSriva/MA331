@@ -1,0 +1,194 @@
+---
+name: "Aryaman Srivastava"
+title: "MA331 Project"
+pledge: "I pledge my honor that I have abided by the Stevens Honors System."
+output: pdf_document
+---
+
+#Introduction
+
+
+If you are like me, then you like laptops. If you are also like me, then you gain a clear understanding of how poor you are when you see the price of the laptops. Even on Black Friday, laptops are very expensive. But why is that? What really influences the price of laptops to be so high? Is it because of the branding of the laptop or do the laptops have really fast processors and other components that hike up the price? And if you have ever been to a store and compared laptops, you will know the prices range heavily for laptops even when they seem to have similar specifications(same operating systems, same screen size etc). Why is that? Are companies just choosing prices at random or are there some factors that are actually influencing the price of laptops?
+
+
+It is natural to assume that newer laptops may have newer features that hike up the price, but this is really only true if you are looking at laptops that have a large year age gap. If you compare a laptop now with a laptop a year later, chances are they will have pretty much all the same features. That being said, a laptop does have many components which affect its performance, and this might vary year by year. A laptop with a better CPU has better processing speed, so it would be a lot faster. A laptop with a lot of storage would never have the issue of slowing down due to running out of space, so it would last longer than a laptop with less storage space. A laptop with more RAM would be able to do more tasks at once without any issues. It is also a reasonable assumption to make that the price of these components would influence the price of the laptop, as the consumer would be paying a higher price for a better performing laptop. So that does give us some answers why the prices would vary for laptops that are released years apart.
+
+
+But it still doesn't explain why the price varies so much when the products seem to have the same or similar components and the same features as well even when they are released in a similar time frame. Of course, this is all from an outsider perspective. We don't know the cost and time it takes to make the components of a laptop. Maybe some components that are different have significantly different production costs, which is why one laptop may be significantly more expensive than another even if they were released in a similar time frame. But what component(s) are those, and which component(s) don't really impact the price at all? Or maybe it is just a branding thing, and the price of certain brands are more expensive than others. In this assignment, we will perform a multiple linear regression model to find the answer to the question: What really influences the price of laptops, in particular what makes the price of laptops differ so much? 
+
+
+
+#Data Description
+
+To perform this linear regression model, we will use the dataset, laptop_price.csv, from kaggle found at https://www.kaggle.com/datasets/muhammetvarl/laptop-price. It is very nice because we have a lot of data: roughly 1300 rows of data and 13 columns. Furthermore, the data is complete, meaning we don't have to worry about empty rows/columns in our dataset. In the columns, it also gives us a lot of useful information about the laptops. Of course, it gives us the price, but also the Laptop's brand, model, operating system, CPU, GPU, RAM, storage capacity, screen size, weight, storage/memory, and type(macbook, gaming, notebook etc). The only column we won't use is the laptop_id, which is basically just the index of each individual laptop in the dataset, so we can assume that it is not going to influence the price. Other than that, we can pretty much use all the other variables. To start the processing/cleaning up process, I started with the string variables that we can't extract any numerical values from. This would be the Company, Product, TypeName, OpSys, and Gpu variables. Using a hash for each variable, I mapped each distinct value to a numerical value, and then changed these variables for all datapoints to be those mapped numerical values. The Memory variable is a special case. While we could extract the numeric values, because the units are not standardized, and we also want to account for the type of Memory Storage each individual laptop has(SSD, Flash Storage etc), we are going to perform the same procedure for processing the Memory variable as we did previously. Next, I moved onto variables that we want to extract numerical values from the string. This would be the CPU, RAM, and Weight variables. I looped through all the datapoints, extracting the numeric value we want to capture for each variable and setting each variable to its corresponding extracted numeric value. After that, for the ScreenResolution variable, I looped over all the datapoints and separated the x and y resolution, then set the ScreenResolution variable to the summation of those 2 variables. To end the cleanup process, I just converted the Price into dollars using the conversion rate between Euros and Dollars.
+
+```{r, echo = FALSE, warning = FALSE, message=FALSE}
+library(hash)
+data <- read.csv("laptop_price.csv")
+companyHash <- hash()
+companyNumber <- 1
+productHash <- hash()
+productNumber <- 1
+typeHash <- hash()
+typeNumber <- 1
+opSysHash <- hash()
+opSysNumber <- 1
+gpuHash <- hash()
+gpuNumber <- 1
+for (i in 1:nrow(data)) {
+  if (!is.na(data$Company[i]) && data$Company[i] != "") {
+    if (!data$Company[i] %in% keys(companyHash)) {
+      companyHash[[data$Company[i]]] <- companyNumber
+      companyNumber <- companyNumber + 1
+    }
+  }
+  if (!is.na(data$Product[i]) && data$Product[i] != "") {
+    if (!data$Product[i] %in% keys(productHash)) {
+      productHash[[data$Product[i]]] <- productNumber
+      productNumber <- productNumber + 1
+    }
+  }
+  if (!is.na(data$TypeName[i]) && data$TypeName[i] != "") {
+    if (!data$TypeName[i] %in% keys(typeHash)) {
+      typeHash[[data$TypeName[i]]] <- typeNumber
+      typeNumber <- typeNumber + 1
+    }
+  }
+  if (!is.na(data$OpSys[i]) && data$OpSys[i] != "") {
+    if (!data$OpSys[i] %in% keys(opSysHash)) {
+      opSysHash[[data$OpSys[i]]] <- opSysNumber
+      opSysNumber <- opSysNumber + 1
+    }
+  }
+  if (!is.na(data$Gpu[i]) && data$Gpu[i] != "") {
+    if (!data$Gpu[i] %in% keys(gpuHash)) {
+      gpuHash[[data$Gpu[i]]] <- gpuNumber
+      gpuNumber <- gpuNumber + 1
+    }
+  }
+  data$Company[i] <- companyHash[[data$Company[i]]]
+  data$Product[i] <- productHash[[data$Product[i]]]
+  data$TypeName[i] <- typeHash[[data$TypeName[i]]]
+  data$Gpu[i] <- gpuHash[[data$Gpu[i]]]
+  data$OpSys[i] <- opSysHash[[data$OpSys[i]]]
+}
+data$Company <- as.numeric(data$Company)
+data$Product <- as.numeric(data$Product)
+data$TypeName <- as.numeric(data$TypeName)
+data$Gpu <- as.numeric(data$Gpu)
+data$OpSys <- as.numeric(data$OpSys)
+
+```
+
+
+```{r, echo = FALSE, warning= FALSE, message=FALSE}
+for (i in 1:nrow(data)) {
+  res <- strsplit(strsplit(data$ScreenResolution[i], "x")[[1]][1], " ")[[1]]
+  x <- as.numeric(res[length(res)])
+  y <- as.numeric(strsplit(data$ScreenResolution[i], "x")[[1]][2])
+  data$ScreenResolution[i] <- x + y
+}
+data$ScreenResolution <- as.numeric(data$ScreenResolution)
+```
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+for (i in 1:nrow(data)) {
+  x <- strsplit(data$Cpu[[i]], " ")[[1]]
+  data$Cpu[i] <- strsplit(x[length(x)], "GHz")[[1]][1]
+}
+data$Cpu <- as.numeric(data$Cpu)
+```
+
+```{r, echo = FALSE, warning= FALSE, message = FALSE}
+for (i in 1:nrow(data)) {
+  data$Ram[i] <- strsplit(data$Ram[i], "GB")[[1]][1]
+  data$Weight[i] <- strsplit(data$Weight[i], "kg")[[1]][1]
+}
+data$Ram <- as.numeric(data$Ram)
+data$Weight <- as.numeric(data$Weight)
+```
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+memoryHash <- hash()
+memoryHashNumber <- 1
+for (i in 1:nrow(data)) {
+   if (!is.na(data$Memory[i]) && data$Memory[i] != "") {
+    if (!data$Memory[i] %in% keys(memoryHash)) {
+      memoryHash[[data$Memory[i]]] <- memoryHashNumber
+      memoryHashNumber <- memoryHashNumber + 1
+    }
+   }
+  data$Memory[i] <- memoryHash[[data$Memory[i]]]
+}
+data$Memory <- as.numeric(data$Memory)
+```
+
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+data$Price <- data$Price_euros*1.09
+summary(data)
+```
+
+
+Unfortunately, while our data is great, it does have some limitations. Firstly, it only gives us the actual name of the GPU component for each laptop, rather than the speed/performance of the laptop's GPU, which would have been preferred for fitting a linear model. Secondly, because it doesn't give us the battery life or charging time of the laptop, which could influence the price of the laptop. If we had this information, our linear model would likely be a much better fit.
+
+
+#Methods
+
+
+Initially, I fit a multiple linear regression model with all the variables other than Price as predictors for Price. Using the summary table, I first determined whether the model was actually a better fit for the data then if we had a model with no predictors using the F statistic. I also looked at the R^2 and Adjusted R^2 to see if the model is actually effective at explaining the variation in the response variable which is Price. I also calculated the VIF for the model to see roughly how much colinearity we have in the variables. After that, I used the backward elimination algorithm to create a reduced model by taking out predictors with the least amount of significance. I did this because since those predictors are not statistically significant, we could attribute any predicting power they have to chance, so they aren't really effective in our model. Also by reducing the number of non-significant predictors, I hope to improve the fit of the model overall and reduce the difference between R^2 and adjusted R^2. 
+
+
+I always check the R^2 and adjusted R^2 at each step just to make sure that I am on the right track and taking out whichever predictors I chose to take out actually made a difference in the fit of our model. This improvement would be measured in the difference between the R^2 and adjusted R^2. I would also check if the F-statistic changed in any way, mainly if the F-statistic increased from our previous model. This is because if the F-statistic increased, we can argue that our model reached a better fit for the data than the previous model. Finally, at each step, I just check the VIF of the model and see if it changed at all. I do this because I want to make sure our new model doesn't have a very high level of colinearity. If our model has a very high level of colinearity then that means even though our model might seem to be a good fit for the data based on the F-statistic, the varaibles themselves may not be significant as the variation in the response variable that is explained by the predictors may be inflated. 
+
+
+I repeat this process until I reach a model that I cannot reduce anymore, that is all the predictors are on roughly the same level of significance. I chose the backward elimination method because it is fairly easy to implement and it is effective at reducing the number of insignificant predictors that could be ruining the fit and signficance of the model. The backward elimination method is appropriate for this type of data because we have 11 predictors, so we could have 2^11 = 2048 different possible models. If we were to go through every single possible model to find the most optimal model, it would take far too long. 
+
+
+With other methods, they would be a lot more complicated and too time consuming. For example, if we tried to use Cross Validation, we would have to develop a test, training and validation set from the data for each model we want to test. With the amount of data we have, it is possible, but it would be a lot more complicated than just doing the backwards elimination method. If we tried to use Stepwise Regression, we would have to deal with the fact that there are 11 predictors. This means we would first have to fit 11 different models each with one predictor, and then subsequently check each additional model to see which predictor to next add while also check which predictor to drop from the model, which is more complicated than just dropping the lowest predictor(s) from a full model. With the backwards elimination method I only went through 3 models to get to an optimal model. Now of course I did get a little lucky. If there was more variation in the significance levels of the predictors, I could have potentially went through more models to get the optimal model.
+
+
+#Results
+```{r, echo = FALSE, warning = FALSE, message = FALSE}
+model <- lm(data$Price~data$Company + data$Product + data$TypeName + data$Inches + data$Cpu + data$Ram + data$Memory + data$Gpu + data$OpSys + data$Weight + data$ScreenResolution, data = data)
+plot(model)
+summary(model)
+1/(1-summary(model)$r.squared)
+```
+
+
+Looking at our residuals, it looks okay as there isn't really a discernible pattern, but the residuals are clumped up with a few outliers and they are kind of centered to the left. So fitting a linear model for this data is fairly reasonable. Our R^2 and Adjusted R^2 look pretty good as well, so we can say that the variation in price can be explained by our predictors. Our F-statistic looks good as well and its statistically signficant, so we have evidence that our model is a better fit than a model with no predictors. Our VIF is approximately 3, so we do have some colinearity in our model. For our predictors, it seems about half of them are significant on at least the alpha = 0.05 level, but the other half are not significant at all. So, we are going to fit a reduced model without those insignificant predictors.
+
+
+```{r, echo = FALSE}
+model2 <- lm(data$Price~data$TypeName + data$Inches + data$Cpu + data$Ram + data$Memory + data$ScreenResolution + data$OpSys)
+summary(model2)
+1/(1-summary(model2)$r.squared)
+```
+
+
+Again, our model looks to be a good fit for the data, or at least a better fit than a model with no predictors. Our F-statistic is again statistically significant so we have evidence that our reduced model is a better fit than a model with no predictors. Another key improvement is that the F-statistic increased from the previous model, so our new model seems to be a better fit for the data. The difference between our Adjusted and multiple R^2 also went down, so removing those predictors did improve the fit of our data. Our VIF also went down slightly so removing those predictors reduced the colinearity in our model. Continuing with the backward elimination method, we create another reduced model without the least significant predictor.
+
+
+```{r, echo = FALSE}
+model3 <- lm(data$Price~data$TypeName + data$Inches + data$Cpu + data$Ram + data$ScreenResolution + data$OpSys)
+summary(model3)
+1/(1-summary(model3)$r.squared)
+
+```
+
+
+At this point there are a few key things to note. Firstly, all our predictors are at the same significance level with extremely small p-values, so we can't really reduce our model any further with the backward elimination method. Secondly, once again our F-statistic went up, and the difference between our R^2 and our adjusted R^2 went down again, which means the fit of our model is better than the previous model. Our VIF also went down slightly, so this model has slightly less colinearity than the previous model. Since we can't really reduce our model anymore, this is the final/best model we can produce with the chosen method.
+
+
+
+#Conclusion
+
+
+Based on our model, it seems that there are primarily 5 factors which greatly influence the price of a laptop. That is the type of laptop, the size of the screen(in inches), the speed of the CPU, the amount of RAM, the Screen Resolution, and Operating System of the laptop. Components that don't seem to influence the price as much or at all are the Brand, Product Name, Weight, GPU, and Memory Storage. This implies that it is more expensive to the company/producer to make certain components than others, and this can greatly drive up the price and be the difference maker in the prices of laptop. It is also important to note that our model is not completely devoid of colinearity, as it has some moderate colinearity. 
+
+
+It could very well be possible that laptops which are gaming laptops tend to have higher screen resolutions, RAM, and processor speed than other types of laptops, so it could be that the TypeName variable is a predictor for CPU, Ram, and ScreenResolution. There are also other limitations with our results. Since we used a backward elimination method, we didn't consider all possible linear models that could be generated from the data. There might actually be a more optimal model with some obscure combination of predictors, our model is simply the local optimum from all the models generated using the Backwards Elimination Method. For future models, it would be nicer if we could do a cross validation set, because although it is more time consuming and complicated, it produces a more optimal model.
+
+
+We are also missing some information from our data which could have impacted our results. For example, our GPU variable only told us the model/name of the GPU each laptop had, and not how fast or powerful that GPU is. We also could have had more predictors such as battery life, but our data was somewhat limited. We also have to keep in mind that the price for the same laptop may vary from where you buy it. You could potentially get a $1000 laptop sold at Walmart for only $700 if you buy from Ebay. For future models, I would like to have more data with the attributes aforementioned. 
+

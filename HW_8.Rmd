@@ -1,0 +1,137 @@
+---
+name: "Aryaman Srivastava"
+pledge: "I pledge my honor that I have abided by the Stevens Honors System"
+title: "HW_8"
+output: pdf_document
+date: "2023-11-13"
+---
+
+
+#HW #8 Due 11:59 PM Monday November 13, 2023
+
+All parts of this homework should be submitted to Canvas. Submit the answers to questions without an inserted code block using handwritten scanned notes or as a latex/typed up pdf file with justification. Submit the answers  to those questions with an inserted code block as the pdf file generated when knitting this report. If need be, combine these pdfs into a single file
+
+##Question 1
+###A
+Calculate the expectation of b_0 in a linear model with one predictor. You can use the fact that we already derived the expectation of b_1
+
+
+E(b0) = E(y_hat - b1x_bar)
+
+E(b0) = 1/n summation(E(Yi) - E(b1)x_bar)
+
+E(b0) = 1/n summation(B0 + B1xi) - B1X_bar
+
+E(b0) = 1/n(nB0 + nB1x_bar) - B1x_bar
+
+E(b0) = B0 + B1x_bar - B1x_bar
+
+E(b0) = B0
+
+
+##Question 2
+Install any of the necessary packages to make the code below run 
+```{r}
+
+library(tidyverse)
+library(ggpubr)
+library(datarium)
+
+data("marketing", package = "datarium")
+head(marketing, 4)
+
+```
+
+
+###A
+
+Fit a simple linear model regressing `sales` on `youtube` and plot the residuals, standardized and studentized residuals. Finally, plot the residuals against advertising budget on youtube
+
+```{r}
+model <- lm(sales~youtube, data = marketing)
+plot(resid(model))
+plot(rstandard(model))
+plot(rstudent(model))
+plot(marketing$youtube, model$residuals)
+```
+
+###B 
+
+Comment on the appropriateness of such a linear model given the plots from part A.  
+
+
+A linear model seems appropriate for this data as the residual plots all seem to have no discernible pattern and are very scattered, which would indicate that a regression performed on the data would be accurate and a good fit for the data.
+
+
+###C
+Print the summary of the model.  In particular, interpret the slope parameter and its significance (or lack thereof).  
+
+```{r}
+summary(model)
+
+```
+
+
+The slope of the model is very close to 0, which indicates that the sales increases only by a small amount proportional to an increase in youtube. More specifically, for every 1 unit increase in youtube, we can expect only a 0.047 increase in sales. Furthermore, this slope appears to be statistically signifcant as it has a p-value less than 2e-16, which means that we can reject the null hypothesis that the slope is 0 and that there is a relationship between sales and youtube.
+
+
+###D
+
+Using this model, predict the sales response to a youtube observation of 175.  
+
+```{r}
+newx <- data.frame(youtube = 175)
+predict(model, newx)
+
+```
+
+##Question 3
+Install any of the necessary packages to make the code below run and print the first 6 rows of the `gala` data set.  
+
+```{r}
+library(faraway)
+data(gala, package = "faraway")
+head(gala)
+```
+
+###A
+
+Fit a simple linear model regressing `Species` on `Adjacent`.  Plot the residuals, standardized and studentized residuals and comment on the appropriateness of the current linear model.  
+
+```{r}
+speciesModel <- lm(Species~Adjacent, gala)
+plot(resid(speciesModel))
+plot(rstandard(speciesModel))
+plot(rstudent(speciesModel))
+```
+
+
+A linear model may not be appropriate for this data because although the residuals are scattered, there seems to be a slight curved pattern where the residuals increase greatly towards the highest index values. This would indicate that a linear model may not be appropriate for the data.
+
+
+###B
+
+Now log transform both response and explanatory variables and refit the linear model.  That is, you should now be regressing `log(Species)` on `log(Adjacent)`. Plot the residuals, standardized and studentized residual for this new linear model and comment.  
+
+```{r}
+newModel <- lm(log(Species)~log(Adjacent), gala)
+plot(resid(newModel))
+plot(rstandard(newModel))
+plot(rstudent(newModel))
+
+```
+
+
+This new linear model may be more appropriate as the residuals are scattered, and there doesn't seem to be any sort of discernible curved pattern in them, which indicates that a linear model may be appropriate for this data.
+
+
+###C 
+
+Finally, print the summary for this new model, and explain why this is still a very inadequate model 
+```{r}
+summary(newModel)
+```
+
+
+This is is still an inadequate model as the p-value for the slope of the model is .56, which is significantly above the usual alpha level of 0.05. Therefore, we can't reject the null hypothesis that the slope is 0 and there isn't a relationship between log(Species) and log(Adjacent). Furthermore, we have a small R^2 value, which indicates that the model is not a good fit for the data.
+

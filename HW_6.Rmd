@@ -1,0 +1,217 @@
+---
+name: "Aryaman Srivastava"
+pledge: "I pledge my honor that I have abided by the Stevens Honors System"
+title: "HW_6"
+output: pdf_document
+date: "2023-10-30"
+---
+
+
+#HW #6 Due 11:59 PM Monday October 30, 2023
+
+All parts of this homework should be submitted to Canvas. Submit the answers to questions without an inserted code block using handwritten scanned notes or as a latex/typed up pdf file with justification. Submit the answers  to those questions with an inserted code block as the pdf file generated when knitting this report. If need be, combine these pdfs into a single file
+
+##Question 1
+###A
+Let's say we have two variables X and Y. We regress Y on X and calculate B_0_hat and B_1_hat. Now let's say we instead regress X on Y, and we get (for the sake of avoiding confusion) C_0_hat and C_1_hat. What is the mathematical relationship between B_1_hat and C_1_hat? 
+
+
+
+C_1_hat = 1/B_1_hat
+
+
+###B 
+Now let's say we regress Y on 2X (that is, we double all the values of X) and we get (again for the sake of avoiding confusion) D_0_hat and D_1_hat. What is the mathematical relationship between B_1_hat and D_1_hat?
+
+
+
+D_1_hat = 2*B_1_hat
+
+
+###C 
+Now let's say we regress 2Y on X (that is, we double all the values of Y) and we get (again for the sake of avoiding confusion) E_0_hat and E_1_hat. What is the mathematical relationship between B_1_hat and E_1_hat?
+
+
+
+E_1_hat = 1/2*B_1_hat
+
+
+
+###D
+Finally, let's say we regress 2Y on 2X (that is, we double all the values of both X and Y) and we get (again for the sake of avoiding confusion) F_0_hat and F_1_hat. What is the mathematical relationship between B_1_hat and F_1_hat? Also, what is the mathematical relationship between B_0_hat and F_0_hat? 
+
+
+
+F_1_hat = B_1_hat
+F_0_hat = B_0_hat
+
+
+
+
+##Question2
+###A
+Let X be vector of length 100 where each entry is a draw from a normal(10, 2) distribution. Let Y be a vector of length 100 where each  y_i = 3*x_i + epsilon_i  where each epsilon_i is an iid Normal RV with mean 0 and sd = 5.   
+
+Create a matrix of length 1000. For each row of the matrix, generate a new 100 length vector X and a corresponding 100 length vector Y. Regress Y on X. Put the estimated intercept from each regression in the first column, and the estimated slope in the second column. Finally, plot 2 histograms, one for each of these estimates, and comment on your results. 
+
+```{r}
+data <- matrix(nrow = 1000, ncol = 2)
+for (x in (1:1000)) {
+  x_i <- rnorm(100, 10, 2)
+  epsilon_i <- rnorm(100, 0, 5)
+  y_i <- 3*x_i + epsilon_i
+  newlm <- summary(lm(y_i ~ x_i))
+  intercept <- newlm$coefficients[1]
+  slope <- newlm$coefficients[2]
+  data[x,1] <- intercept
+  data[x,2] <- slope
+}
+hist(data[,1])
+hist(data[,2])
+
+
+```
+
+
+The histogram of intercepts and slopes both seem to be approximately normal, with the data being centered around 0 for the intercepts histogram, and 3 for the slope histogram. This is what we would expect as each y is calculted by multiplying x by 3 and then adding a random variable distributed N(0, 5).
+
+
+###B 
+Repeat part A, but now make each X a length 500 vector. Report on your results.
+```{r}
+data <- matrix(nrow = 1000, ncol = 2)
+for (x in (1:1000)) {
+  x_i <- rnorm(500, 10, 2)
+  epsilon_i <- rnorm(500, 0, 5)
+  y_i <- 3*x_i + epsilon_i
+  newlm <- summary(lm(y_i ~ x_i))
+  intercept <- newlm$coefficients[1]
+  slope <- newlm$coefficients[2]
+  data[x,1] <- intercept
+  data[x,2] <- slope
+}
+hist(data[,1])
+hist(data[,2])
+```
+
+
+The histograms for both variables seems approximately normal again, with the center for the intercept histogram being 0 and the center of the slope histogram being 3. We would expect this as y is calculated by doing 3x + a random variable distributed N(0,5). One key difference between the previous histograms and these two is that these two histograms have less spread.
+
+###C 
+Repeat  part A, but now make each X a length 1000 vector. Report on your results, and note any effects from changing the sample size, comparing A, B and C. 
+```{r}
+data <- matrix(nrow = 1000, ncol = 2)
+for (x in (1:1000)) {
+  x_i <- rnorm(1000, 10, 2)
+  epsilon_i <- rnorm(1000, 0, 5)
+  y_i <- 3*x_i + epsilon_i
+  newlm <- summary(lm(y_i ~ x_i))
+  intercept <- newlm$coefficients[1]
+  slope <- newlm$coefficients[2]
+  data[x,1] <- intercept
+  data[x,2] <- slope
+}
+hist(data[,1])
+hist(data[,2])
+```
+
+
+The histograms for both variables seems approximately normal again, with the center for the intercept histogram being 0 and the center of the slope histogram being 3. We would expect this as y is calculated by doing 3x + a random variable distributed N(0,5). One key difference between the previous histograms and these two is that these two histograms have a lot less spread.
+
+###D
+Repeat part A, but this time double the standard deviation of each epsilon_i. Discuss your results as compared to part A.
+```{r}
+data <- matrix(nrow = 1000, ncol = 2)
+for (x in (1:1000)) {
+  x_i <- rnorm(100, 10, 2)
+  epsilon_i <- rnorm(100, 0, 10)
+  y_i <- 3*x_i + epsilon_i
+  newlm <- summary(lm(y_i ~ x_i))
+  intercept <- newlm$coefficients[1]
+  slope <- newlm$coefficients[2]
+  data[x,1] <- intercept
+  data[x,2] <- slope
+}
+hist(data[,1])
+hist(data[,2])
+```
+
+
+The histograms for both variables seems approximately normal again, with the center for the intercept histogram being 0 and the center of the slope histogram being 3. We would expect this as y is calculated by doing 3x + a random variable distributed N(0,5). One key difference between the previous histograms and these two is that these two histograms have more spread than the previous histograms.
+
+##Question 3
+
+Repeat Question 2 Parts A and B, but this time, don't have Y be based on X at all, just have it be an independent vector with normally distributed entries with the same mean and sd as the Y in question 2. Comment on your observations. 
+
+```{r}
+data <- matrix(nrow = 1000, ncol = 2)
+for (x in (1:1000)) {
+  x_i <- rnorm(100, 10, 2)
+  epsilon_i <- rnorm(100, 0, 5)
+  y_i <- rnorm(100, 30, 6) + epsilon_i
+  newlm <- summary(lm(y_i ~ x_i))
+  intercept <- newlm$coefficients[1]
+  slope <- newlm$coefficients[2]
+  data[x,1] <- intercept
+  data[x,2] <- slope
+}
+hist(data[,1])
+hist(data[,2])
+
+data2 <- matrix(nrow = 1000, ncol = 2)
+for (x in (1:1000)) {
+  x_i <- rnorm(500, 10, 2)
+  epsilon_i <- rnorm(500, 0, 5)
+  y_i <- rnorm(500, 30, 6) + epsilon_i
+  newlm <- summary(lm(y_i ~ x_i))
+  intercept <- newlm$coefficients[1]
+  slope <- newlm$coefficients[2]
+  data2[x,1] <- intercept
+  data2[x,2] <- slope
+}
+hist(data2[,1])
+hist(data2[,2])
+```
+
+
+All the histograms look normally distributed, and the intercept histograms seem to be centered around 30 while the slope histograms seem to be centered around 0. This is what we would expect because since y doesn't depend on x anymore, the slope for a regression of y on x would be 0. In addition, it makes sense that the intercept would be 30 because that is the difference between the expected value of y and the expected value of x times the slope. Since the slope is 0, the intercept would just be the expected value of y, which is 30. 
+
+
+
+##Question 4: Anscombe's quartet, or the power of visualization
+
+Run the following code to attach the anscombe dataset to your environment.  
+```{r}
+library(datasets)
+attach(anscombe)
+
+```
+
+##A
+Fit 4 separate simple linear regressions using the variables from the Anscombe dataset: y1 ~ x1, y2 ~ x2, y3 ~ x3 and y4 ~ x4, and report the summaries
+```{r}
+summary(lm(y1 ~ x1))
+summary(lm(y2~x2))
+summary(lm(y3~x3))
+summary(lm(y4~x4))
+
+```
+
+Comment on anything you notice about these 4 different models.
+
+
+These models appare to have roughly the same R^2, and roughly the same intercept and slope. One key thing to notice is that as we go from y1 ~ x1 to y4 ~ x4, the intercept and slope both seem to decrease by a tiny amount in each model. Also, their residuals are starkly different from one another.
+
+##B
+Plot the variables from each of the regressions, that is plot y1 vs x1, y2 vs y2, etc. 
+```{r}
+plot(x1, y1)
+plot(x2, y2)
+plot(x3, y3)
+plot(x4, y4)
+```
+
+Do these variables appear to show the same relationship? Comment on what you were expecting after part A, and whether and how these plots confirmed or defied your expectations  
+
+
+These variables do not show the same relationship. The plots y1 vs x1, and y3 vs x3 seem to show a linear relationship. The plot, y2 vs x2 seems to show a quadratic relationship, and the plot y4 vs x4 seems to have no relationship, with x4 being equal to a constant that is unaffected by y4. After part A, I was expecting these plots to look roughly the same as the models have roughly the same slopes, intercepts, and R^2 values. However, this is certainly not the case as we can see, as these 4 plots are very different.
